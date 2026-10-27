@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: aquasat-ai-platform
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: starter
+    region: oregon
+    healthCheckPath: /api/health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: SESSION_COOKIE_SAMESITE
+        value: "lax"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: aquasat-postgres
+          property: connectionString
+
+databases:
+  - name: aquasat-postgres
+    plan: free
+    region: oregon
+    databaseName: aquasat_db
+    user: aquasat_user

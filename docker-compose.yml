@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: aquasat_db
+    restart: always
+    environment:
+      POSTGRES_USER: aquasat_user
+      POSTGRES_PASSWORD: aquasat_secure_password_2026
+      POSTGRES_DB: aquasat_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aquasat_user -d aquasat_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aquasat_web
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - SECRET_KEY=replace-with-your-production-secret-key-aquasat-2026
+      - DATABASE_URL=postgresql://aquasat_user:aquasat_secure_password_2026@db:5432/aquasat_db
+      - SESSION_COOKIE_SECURE=false # Set to true when serving behind HTTPS reverse proxy
+      - SESSION_COOKIE_SAMESITE=lax
+    volumes:
+      - upload_data:/app/backend/uploads
+      - model_weights:/app/backend/model_weights
+
+volumes:
+  postgres_data:
+  upload_data:
+  model_weights:
